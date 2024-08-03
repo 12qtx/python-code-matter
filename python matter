@@ -1,0 +1,80 @@
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer  
+  
+def summarize_text(text, model_name="IDEA-CCNL/Randeng-Pegasus-523M-Summary-Chinese"):  
+    tokenizer = PegasusTokenizer.from_pretrained(model_name)  
+    model = PegasusForConditionalGeneration.from_pretrained(model_name)  
+  
+    # 对文本进行编码  
+    inputs = tokenizer(text, max_length=1024, return_tensors="pt", truncation=True)  
+  
+    # 生成摘要  
+    summary_ids = model.generate(inputs["input_ids"], max_length=130, min_length=30, length_penalty=2.0, num_beams=4, early_stopping=True)  
+    output = tokenizer.decode(summary_ids[0], skip_special_tokens=True)  
+    return output  
+  
+summary = summarize_text(text)  
+print(summary)
+
+
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+Cell In[3], line 16
+     13     output = tokenizer.decode(summary_ids[0], skip_special_tokens=True)  
+     14     return output  
+---> 16 summary = summarize_text(text)  
+     17 print(summary)
+
+Cell In[3], line 5, in summarize_text(text, model_name)
+      3 def summarize_text(text, model_name="IDEA-CCNL/Randeng-Pegasus-523M-Summary-Chinese"):  
+      4     # 注意：这里使用的模型可能不是专为中文设计的，你需要找到一个适合中文的Pegasus模型  
+----> 5     tokenizer = PegasusTokenizer.from_pretrained(model_name)  
+      6     model = PegasusForConditionalGeneration.from_pretrained(model_name)  
+      8     # 对文本进行编码  
+
+File ~\anaconda3\Lib\site-packages\transformers\tokenization_utils_base.py:2291, in PreTrainedTokenizerBase.from_pretrained(cls, pretrained_model_name_or_path, cache_dir, force_download, local_files_only, token, revision, trust_remote_code, *init_inputs, **kwargs)
+   2288     else:
+   2289         logger.info(f"loading file {file_path} from cache at {resolved_vocab_files[file_id]}")
+-> 2291 return cls._from_pretrained(
+   2292     resolved_vocab_files,
+   2293     pretrained_model_name_or_path,
+   2294     init_configuration,
+   2295     *init_inputs,
+   2296     token=token,
+   2297     cache_dir=cache_dir,
+   2298     local_files_only=local_files_only,
+   2299     _commit_hash=commit_hash,
+   2300     _is_local=is_local,
+   2301     trust_remote_code=trust_remote_code,
+   2302     **kwargs,
+   2303 )
+
+File ~\anaconda3\Lib\site-packages\transformers\tokenization_utils_base.py:2525, in PreTrainedTokenizerBase._from_pretrained(cls, resolved_vocab_files, pretrained_model_name_or_path, init_configuration, token, cache_dir, local_files_only, _commit_hash, _is_local, trust_remote_code, *init_inputs, **kwargs)
+   2523 # Instantiate the tokenizer.
+   2524 try:
+-> 2525     tokenizer = cls(*init_inputs, **init_kwargs)
+   2526 except OSError:
+   2527     raise OSError(
+   2528         "Unable to load vocabulary from file. "
+   2529         "Please check that the provided vocabulary is accessible and not corrupted."
+   2530     )
+
+File ~\anaconda3\Lib\site-packages\transformers\models\pegasus\tokenization_pegasus.py:140, in PegasusTokenizer.__init__(self, vocab_file, pad_token, eos_token, unk_token, mask_token, mask_token_sent, additional_special_tokens, offset, sp_model_kwargs, **kwargs)
+    138 self.vocab_file = vocab_file
+    139 self.sp_model = spm.SentencePieceProcessor(**self.sp_model_kwargs)
+--> 140 self.sp_model.Load(vocab_file)
+    142 _added_tokens_decoder = {
+    143     0: AddedToken(str(pad_token), special=True),
+    144     1: AddedToken(str(eos_token), special=True),
+    145 }
+    147 if self.mask_token_sent is not None:
+
+File ~\anaconda3\Lib\site-packages\sentencepiece\__init__.py:961, in SentencePieceProcessor.Load(self, model_file, model_proto)
+    959 if model_proto:
+    960   return self.LoadFromSerializedProto(model_proto)
+--> 961 return self.LoadFromFile(model_file)
+
+File ~\anaconda3\Lib\site-packages\sentencepiece\__init__.py:316, in SentencePieceProcessor.LoadFromFile(self, arg)
+    315 def LoadFromFile(self, arg):
+--> 316     return _sentencepiece.SentencePieceProcessor_LoadFromFile(self, arg)
+
+TypeError: not a string
